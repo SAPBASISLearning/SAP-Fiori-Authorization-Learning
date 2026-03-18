@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAP Fiori Authorization Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sap-blue: #0070f2;
+    --sap-teal: #0ABAA8;
+    --sap-dark: #0a0f1e;
+    --sap-darker: #060a14;
+    --sap-card: #0d1424;
+    --sap-border: rgba(0,112,242,0.2);
+    --sap-text: #e8edf5;
+    --sap-muted: #7a8aaa;
+    --sap-accent: #00d4ff;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--sap-darker);
+    color: var(--sap-text);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,112,242,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,112,242,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Nav */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    height: 56px;
+    background: rgba(6,10,20,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--sap-border);
+  }
+
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--sap-accent);
+  }
+
+  .nav-brand .dot {
+    width: 8px; height: 8px;
+    background: var(--sap-teal);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--sap-muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-family: var(--font-mono);
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--sap-accent); }
+
+  /* Hero */
+  .hero {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6rem 2rem 4rem;
+    text-align: center;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,112,242,0.1);
+    border: 1px solid rgba(0,112,242,0.3);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--sap-accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 2rem;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.6s ease 0.1s both;
+  }
+
+  .hero h1 .highlight {
+    background: linear-gradient(135deg, var(--sap-blue), var(--sap-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    font-size: 1.1rem;
+    color: var(--sap-muted);
+    max-width: 580px;
+    line-height: 1.7;
+    margin-bottom: 3rem;
+    animation: fadeUp 0.6s ease 0.2s both;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.6s ease 0.3s both;
+  }
+
+  .btn-primary {
+    background: var(--sap-blue);
+    color: white;
+    padding: 12px 28px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary:hover {
+    background: #0060d0;
+    transform: translateY(-1px);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--sap-text);
+    padding: 12px 28px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid var(--sap-border);
+    transition: all 0.2s;
+  }
+
+  .btn-outline:hover {
+    border-color: var(--sap-blue);
+    color: var(--sap-accent);
+    transform: translateY(-1px);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    padding: 2rem;
+    border-top: 1px solid var(--sap-border);
+    border-bottom: 1px solid var(--sap-border);
+    background: rgba(13,20,36,0.6);
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-number {
+    font-family: var(--font-mono);
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--sap-accent);
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--sap-muted);
+    letter-spacing: 0.05em;
+  }
+
+  /* Sections */
+  .section {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 5rem 2rem;
+  }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--sap-teal);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  .section-title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+  }
+
+  .section-desc {
+    color: var(--sap-muted);
+    font-size: 1rem;
+    line-height: 1.7;
+    max-width: 560px;
+    margin-bottom: 3rem;
+  }
+
+  /* Cards grid */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .card {
+    background: var(--sap-card);
+    border: 1px solid var(--sap-border);
+    border-radius: 10px;
+    padding: 1.75rem;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.25s;
+    display: block;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--sap-blue), var(--sap-accent));
+    transform: scaleX(0);
+    transition: transform 0.3s;
+    transform-origin: left;
+  }
+
+  .card:hover {
+    border-color: rgba(0,112,242,0.4);
+    transform: translateY(-3px);
+    background: rgba(13,20,36,0.9);
+  }
+
+  .card:hover::before { transform: scaleX(1); }
+
+  .card-icon {
+    width: 44px; height: 44px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    margin-bottom: 1.25rem;
+    background: rgba(0,112,242,0.1);
+    border: 1px solid rgba(0,112,242,0.2);
+  }
+
+  .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--sap-text);
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--sap-muted);
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+
+  .card-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(0,112,242,0.1);
+    color: var(--sap-accent);
+    border: 1px solid rgba(0,112,242,0.2);
+    letter-spacing: 0.05em;
+  }
+
+  /* Concept flow */
+  .concept-flow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0;
+    margin: 2rem 0;
+    position: relative;
+  }
+
+  .flow-step {
+    background: var(--sap-card);
+    border: 1px solid var(--sap-border);
+    padding: 1.5rem 1rem;
+    text-align: center;
+    position: relative;
+  }
+
+  .flow-step:first-child { border-radius: 8px 0 0 8px; }
+  .flow-step:last-child { border-radius: 0 8px 8px 0; }
+
+  .flow-step:not(:last-child)::after {
+    content: '→';
+    position: absolute;
+    right: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--sap-blue);
+    font-size: 18px;
+    z-index: 2;
+    background: var(--sap-darker);
+    padding: 0 2px;
+  }
+
+  .flow-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--sap-teal);
+    margin-bottom: 0.5rem;
+  }
+
+  .flow-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--sap-text);
+    margin-bottom: 0.25rem;
+  }
+
+  .flow-sub {
+    font-size: 11px;
+    color: var(--sap-muted);
+  }
+
+  /* Coming soon badge */
+  .coming-soon {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    background: rgba(255,160,0,0.1);
+    color: #ffaa00;
+    border: 1px solid rgba(255,160,0,0.2);
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 0.5rem;
+  }
+
+  .ready {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    background: rgba(10,186,168,0.1);
+    color: var(--sap-teal);
+    border: 1px solid rgba(10,186,168,0.2);
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 0.5rem;
+  }
+
+  /* Footer */
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--sap-border);
+    padding: 2rem;
+    text-align: center;
+    color: var(--sap-muted);
+    font-size: 12px;
+    font-family: var(--font-mono);
+  }
+
+  footer a {
+    color: var(--sap-accent);
+    text-decoration: none;
+  }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--sap-border);
+    margin: 0;
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+    .stats-bar { gap: 1.5rem; }
+    .concept-flow { grid-template-columns: 1fr; }
+    .flow-step { border-radius: 0 !important; }
+    .flow-step:first-child { border-radius: 8px 8px 0 0 !important; }
+    .flow-step:last-child { border-radius: 0 0 8px 8px !important; }
+    .flow-step:not(:last-child)::after { content: '↓'; right: auto; top: auto; bottom: -12px; left: 50%; transform: translateX(-50%); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-brand">
+    <div class="dot"></div>
+    SAP-FIORI-AUTH
+  </div>
+  <ul class="nav-links">
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#modules">Modules</a></li>
+    <li><a href="#exercises">Exercises</a></li>
+    <li><a href="https://github.com/SAPBASISLearning/SAP-Fiori-Authorization-Learning" target="_blank">GitHub ↗</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">
+    <span>●</span> SAP S/4HANA 2023 · Fiori Authorization
+  </div>
+  <h1>
+    Mastering<br>
+    <span class="highlight">Fiori Authorization</span><br>
+    in S/4HANA
+  </h1>
+  <p>
+    Hands-on learning resource for SAP BASIS consultants.
+    Understand Fiori architecture, build roles, assign catalogs,
+    and troubleshoot access issues — from real system data.
+  </p>
+  <div class="hero-actions">
+    <a href="#architecture" class="btn-primary">Start Learning →</a>
+    <a href="https://github.com/SAPBASISLearning/SAP-Fiori-Authorization-Learning" target="_blank" class="btn-outline">View on GitHub</a>
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="stats-bar">
+  <div class="stat">
+    <span class="stat-number">3</span>
+    <span class="stat-label">Auth Layers</span>
+  </div>
+  <div class="stat">
+    <span class="stat-number">103</span>
+    <span class="stat-label">Fiori T-codes</span>
+  </div>
+  <div class="stat">
+    <span class="stat-number">SAP_BR</span>
+    <span class="stat-label">Business Roles</span>
+  </div>
+  <div class="stat">
+    <span class="stat-number">/UI2/</span>
+    <span class="stat-label">Fiori Namespace</span>
+  </div>
+  <div class="stat">
+    <span class="stat-number">PFCG</span>
+    <span class="stat-label">Role Tool</span>
+  </div>
+</div>
+
+<!-- Architecture Section -->
+<section class="section" id="architecture">
+  <div class="section-label">// 01 — FOUNDATION</div>
+  <h2 class="section-title">S/4HANA Authorization Layers</h2>
+  <p class="section-desc">
+    Unlike ECC which has one layer, S/4HANA has THREE independent
+    authorization layers. A user needs to pass ALL three to access an app.
+  </p>
+
+  <div class="concept-flow">
+    <div class="flow-step">
+      <div class="flow-num">LAYER 01</div>
+      <div class="flow-title">ABAP Buffer</div>
+      <div class="flow-sub">Standard auth objects checked at runtime</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">LAYER 02</div>
+      <div class="flow-title">HANA DB</div>
+      <div class="flow-sub">Database privilege check at DB level</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">LAYER 03</div>
+      <div class="flow-title">Fiori Launchpad</div>
+      <div class="flow-sub">/UI2/ objects — tile & catalog access</div>
+    </div>
+  </div>
+
+  <div class="cards-grid" style="margin-top: 2rem;">
+    <a href="fiori-arch.html" class="card">
+      <div class="card-icon">🏗️</div>
+      <div class="card-title">Fiori Architecture Deep Dive</div>
+      <div class="card-desc">
+        App ID, Catalog, Tile, Semantic Object — understand how
+        every piece of Fiori fits together.
+      </div>
+      <div class="card-tags">
+        <span class="tag">CATALOG</span>
+        <span class="tag">TILE</span>
+        <span class="tag">APP-ID</span>
+      </div>
+      <div class="ready">● READY</div>
+    </a>
+
+    <a href="role-building.html" class="card">
+      <div class="card-icon">🔐</div>
+      <div class="card-title">Fiori Role Building Guide</div>
+      <div class="card-desc">
+        Step by step guide to building Fiori roles in PFCG —
+        from SAP_BR_* clone to production assignment.
+      </div>
+      <div class="card-tags">
+        <span class="tag">PFCG</span>
+        <span class="tag">SAP_BR</span>
+        <span class="tag">CLONE</span>
+      </div>
+      <div class="coming-soon">⏳ COMING SOON</div>
+    </a>
+
+    <a href="app-catalog.html" class="card">
+      <div class="card-icon">📋</div>
+      <div class="card-title">App → Catalog Mapping</div>
+      <div class="card-desc">
+        Find which catalog contains your Fiori app.
+        Covers FI, MM, SD, HR and partner namespaces.
+      </div>
+      <div class="card-tags">
+        <span class="tag">FI</span>
+        <span class="tag">MM</span>
+        <span class="tag">SD</span>
+      </div>
+      <div class="coming-soon">⏳ COMING SOON</div>
+    </a>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Modules Section -->
+<section class="section" id="modules">
+  <div class="section-label">// 02 — KEY CONCEPTS</div>
+  <h2 class="section-title">What You Will Learn</h2>
+  <p class="section-desc">
+    Practical, hands-on concepts from real S/4HANA system experience.
+    No textbook theory — actual system behavior.
+  </p>
+
+  <div class="cards-grid">
+    <div class="card" style="cursor:default;">
+      <div class="card-icon">🎯</div>
+      <div class="card-title">Fiori Launchpad Concept</div>
+      <div class="card-desc">
+        Spaces, Pages, Groups, Tiles — understand the Launchpad
+        hierarchy and how users see their home screen.
+      </div>
+      <div class="card-tags">
+        <span class="tag">/UI2/UIPC</span>
+        <span class="tag">/UI2/UISC</span>
+      </div>
+    </div>
+
+    <div class="card" style="cursor:default;">
+      <div class="card-icon">📦</div>
+      <div class="card-title">SAP_BR_* Business Roles</div>
+      <div class="card-desc">
+        SAP Best Practice roles — what they contain, why you
+        never assign directly, and how to clone correctly.
+      </div>
+      <div class="card-tags">
+        <span class="tag">SAP_BR</span>
+        <span class="tag">CLONE</span>
+        <span class="tag">Z-ROLE</span>
+      </div>
+    </div>
+
+    <div class="card" style="cursor:default;">
+      <div class="card-icon">🔍</div>
+      <div class="card-title">Fiori Auth Troubleshooting</div>
+      <div class="card-desc">
+        User can't see a tile? App opens but shows error?
+        Systematic approach to diagnose Fiori auth issues.
+      </div>
+      <div class="card-tags">
+        <span class="tag">SU53</span>
+        <span class="tag">SU56</span>
+        <span class="tag">DEBUG</span>
+      </div>
+    </div>
+
+    <div class="card" style="cursor:default;">
+      <div class="card-icon">🌐</div>
+      <div class="card-title">OData & Gateway Auth</div>
+      <div class="card-desc">
+        How Fiori apps call backend via OData services —
+        and what authorization checks happen at gateway level.
+      </div>
+      <div class="card-tags">
+        <span class="tag">/IWFND/</span>
+        <span class="tag">/IWBEP/</span>
+        <span class="tag">ODATA</span>
+      </div>
+    </div>
+
+    <div class="card" style="cursor:default;">
+      <div class="card-icon">⚡</div>
+      <div class="card-title">Fiori Auth Objects Reference</div>
+      <div class="card-desc">
+        Complete reference of /UI2/, /UI5/, /UIF/ auth objects
+        with field values — from real USOBT_C system export.
+      </div>
+      <div class="card-tags">
+        <span class="tag">/UI2/</span>
+        <span class="tag">/UI5/</span>
+        <span class="tag">USOBT_C</span>
+      </div>
+    </div>
+
+    <div class="card" style="cursor:default;">
+      <div class="card-icon">🚀</div>
+      <div class="card-title">Transporting Fiori Roles</div>
+      <div class="card-desc">
+        Moving Fiori roles from DEV → QAS → PRD.
+        What gets transported and what needs manual steps.
+      </div>
+      <div class="card-tags">
+        <span class="tag">STMS</span>
+        <span class="tag">SE10</span>
+        <span class="tag">TRANSPORT</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Exercises Section -->
+<section class="section" id="exercises">
+  <div class="section-label">// 03 — HANDS-ON</div>
+  <h2 class="section-title">Practical Exercises</h2>
+  <p class="section-desc">
+    Real exercises performed on SAP S/4HANA system.
+    Follow along and build your own Fiori roles.
+  </p>
+
+  <div class="cards-grid">
+    <div class="card" style="cursor:default;">
+      <div class="card-icon">📝</div>
+      <div class="card-title">Exercise 1 — AR Accountant Role</div>
+      <div class="card-desc">
+        Clone SAP_BR_AR_ACCOUNTANT, assign to user,
+        verify 7 Daily Business tiles appear on Launchpad.
+      </div>
+      <div class="card-tags">
+        <span class="tag">FI-AR</span>
+        <span class="tag">DAILY-BUSINESS</span>
+      </div>
+      <div class="coming-soon">⏳ IN PROGRESS</div>
+    </div>
+
+    <div class="card" style="cursor:default;">
+      <div class="card-icon">📝</div>
+      <div class="card-title">Exercise 2 — Custom Fiori Role</div>
+      <div class="card-desc">
+        Build a Fiori role from scratch using PFCG —
+        add catalog, maintain /UI2/ objects, test tiles.
+      </div>
+      <div class="card-tags">
+        <span class="tag">PFCG</span>
+        <span class="tag">CATALOG</span>
+      </div>
+      <div class="coming-soon">⏳ COMING SOON</div>
+    </div>
+
+    <div class="card" style="cursor:default;">
+      <div class="card-icon">📝</div>
+      <div class="card-title">Exercise 3 — Troubleshoot Missing Tile</div>
+      <div class="card-desc">
+        User can't see a tile — step by step diagnosis
+        using SU53, SU56 and Fiori Launchpad tools.
+      </div>
+      <div class="card-tags">
+        <span class="tag">SU53</span>
+        <span class="tag">SU56</span>
+      </div>
+      <div class="coming-soon">⏳ COMING SOON</div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <p>
+    Built by <a href="https://github.com/SAPBASISLearning">SAPBASISLearning</a> ·
+    Based on real S/4HANA 2023 system experience ·
+    <a href="https://github.com/SAPBASISLearning/SAP-Fiori-Authorization-Learning" target="_blank">View Source ↗</a>
+  </p>
+</footer>
+
+</body>
+</html>
